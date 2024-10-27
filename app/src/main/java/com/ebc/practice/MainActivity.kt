@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     private var countDownTimer: CountDownTimer? = null
     private val pomodoroDuration = 1 * 12 * 1000L // 25 minutes in milliseconds
     private val coffeBreakDuration = 1* 6 * 1000L // 5 minutes in milliseconds
-    private var slices = 1 // Initialize the slice counter
+    private var slices = 0 // Initialize the slice counter
     private val fullBreakDuration: Long = 30 * 60 * 1000 // 30 minutes in milliseconds
     private var timeLeftInMillis = pomodoroDuration // Track remaining time
     private val interval = 1000L // 1-second interval
@@ -98,6 +99,7 @@ class MainActivity : AppCompatActivity() {
     private fun startPomodoroTimer() {
         isRunning = true
         isPomodoro = true // Set mode to Pomodoro
+        coffeeButton.isEnabled = true
         controlButton.text = getString(R.string.stop) // Set button to "Stop"
         progressBar.max = (pomodoroDuration / interval).toInt() // Set max progress for Pomodoro
         countDownTimer?.cancel() // Cancel any existing timer
@@ -202,21 +204,45 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    private fun updateDots() {
+        val dotViews = listOf(
+            findViewById<ImageView>(R.id.dot1),
+            findViewById<ImageView>(R.id.dot2),
+            findViewById<ImageView>(R.id.dot3),
+            findViewById<ImageView>(R.id.dot4)
+        )
+
+        // Loop through each dot view and update the drawable based on the slices count
+        for (i in dotViews.indices) {
+            if (i < slices+1) {
+                dotViews[i].setImageResource(R.drawable.red_dot) // Change to red if within slice count
+            } else {
+                dotViews[i].setImageResource(R.drawable.gray_dot) // Keep gray if above slice count
+            }
+        }
+    }
+
 
     // Helper function to start the appropriate timer based on isPomodoro
     private fun startTimer() {
         if (isPomodoro) {
+            coffeeButton.isEnabled = true
+            updateDots()
             startPomodoroTimer()
         } else {
             // Check if the next cycle is a coffee break or full break
             if (slices < 4) {
-                Log.d("PomodoroTimer", "Starting Full Break Timer")
+                Log.d("PomodoroTimer", "Starting Coffee Break Timer")
                 startCoffeeBreakTimer()
             } else {
+                Log.d("PomodoroTimer", "Starting Full Break Timer")
                 startFullBreakTimer()
+                updateDots()
             }
         }
+        // Update the dot indicators based on the number of slices
     }
+
     private fun pauseTimer() {
         isPaused = true
         controlButton.text = getString(R.string.resume)
@@ -241,8 +267,8 @@ class MainActivity : AppCompatActivity() {
         isInitialized = false
         isRunning = false
         isPaused = false
+        coffeeButton.isEnabled = false
         isPomodoro = true // Reset to Pomodoro mode
-        coffeeButton.isEnabled = true
         slices=0
         timeLeftInMillis = pomodoroDuration
         progressBar.max = (pomodoroDuration / interval).toInt()
@@ -266,8 +292,9 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
-    private fun navigateToCheckpoint(isPomodoro: Boolean) {
 
+
+    private fun navigateToCheckpoint(isPomodoro: Boolean) {
         val intent = Intent(this, CheckpointActivity::class.java).apply {
             putExtra("isPomodoro", isPomodoro)
             putExtra("remainingTime", timeLeftInMillis)

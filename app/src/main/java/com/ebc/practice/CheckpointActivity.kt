@@ -12,6 +12,10 @@ class CheckpointActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.checkpoint)
 
+        // Set the random message
+        val randomMessage = RandomMessages.getRandomMessage()
+        findViewById<TextView>(R.id.random_message).text = randomMessage
+
         // Retrieve the state from MainActivity
         val isPomodoro = intent.getBooleanExtra("isPomodoro", true)
         val remainingTime = intent.getLongExtra("remainingTime", 0L)
