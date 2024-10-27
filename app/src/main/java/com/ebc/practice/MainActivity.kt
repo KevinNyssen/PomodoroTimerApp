@@ -1,5 +1,6 @@
 package com.ebc.practice
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -12,14 +13,18 @@ import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-//Version control beta 1.0.0
+//Version control beta 1.0.1
+//Nav into CheckpointActivity
 class MainActivity : AppCompatActivity() {
+    private val REQUEST_CODE_CHECKPOINT = 1
+    private var originalTimeLeftInMillis = 0L // Store the main timer's remaining time
+
 
     private lateinit var timerTextView: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var controlButton: AppCompatButton
     private lateinit var resetButton: AppCompatButton
-    private lateinit var coffeeButton: AppCompatButton
+    private lateinit var coffeeButton: ImageButton
 
     private var isRunning = false
     private var isPaused = false
@@ -61,6 +66,16 @@ class MainActivity : AppCompatActivity() {
         resetButton.setOnClickListener {
             resetTimer()
         }
+        // Coffee button functionality
+        coffeeButton = findViewById(R.id.coffee_button)
+        coffeeButton.setOnClickListener {
+            // Store the remaining time in a separate variable
+            originalTimeLeftInMillis = timeLeftInMillis
+
+            // Navigate to CheckpointActivity
+            val intent = Intent(this, CheckpointActivity::class.java)
+            startActivityForResult(intent, REQUEST_CODE_CHECKPOINT)
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -68,7 +83,41 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
+    // Handle result from CheckpointActivity
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_CHECKPOINT && resultCode == RESULT_OK) {
+            // Set the timer for a 5-minute coffee break
+            timeLeftInMillis = coffeBreakDuration
+            startCoffeeBreakTimer()
+        }
+    }
+    // Start a coffee break countdown timer
+    private fun startCoffeeBreakTimer() {
+        isRunning = true
+        progressBar.max = (coffeBreakDuration / 1000).toInt()
+        countDownTimer?.cancel() // Cancel any existing timer
+        countDownTimer = object : CountDownTimer(coffeBreakDuration, interval) {
+            override fun onTick(millisUntilFinished: Long) {
+                timeLeftInMillis = millisUntilFinished
+                updateTimerText(timeLeftInMillis)
 
+                // Update progress
+                val elapsedSeconds = ((coffeBreakDuration - millisUntilFinished) / 1000).toInt()
+                progressBar.progress = elapsedSeconds
+            }
+
+            override fun onFinish() {
+                isRunning = false
+                updateTimerText(0)
+                progressBar.progress = progressBar.max // Complete progress on finish
+
+                // Optional: Restore main timer after coffee break
+                timeLeftInMillis = originalTimeLeftInMillis
+                updateTimerText(timeLeftInMillis)
+            }
+        }.start()
+    }
     private fun startTimer() {
         isRunning = true
         isPaused = false
