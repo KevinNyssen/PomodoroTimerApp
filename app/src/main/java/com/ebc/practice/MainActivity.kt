@@ -17,7 +17,10 @@ import androidx.core.view.WindowInsetsCompat
 //Nav into CheckpointActivity
 class MainActivity : AppCompatActivity() {
     private val REQUEST_CODE_CHECKPOINT = 1
+    private var isPomodoro = true
     private var originalTimeLeftInMillis = 0L // Store the main timer's remaining time
+    private var isInitialized = false
+
 
 
     private lateinit var timerTextView: TextView
@@ -29,8 +32,10 @@ class MainActivity : AppCompatActivity() {
     private var isRunning = false
     private var isPaused = false
     private var countDownTimer: CountDownTimer? = null
-    private val pomodoroDuration = 2 * 60 * 1000L // 25 minutes in milliseconds
-    private val coffeBreakDuration = 5 * 60 * 1000L // 5 minutes in milliseconds
+    private val pomodoroDuration = 1 * 12 * 1000L // 25 minutes in milliseconds
+    private val coffeBreakDuration = 1* 6 * 1000L // 5 minutes in milliseconds
+    private var slices = 1 // Initialize the slice counter
+    private val fullBreakDuration: Long = 30 * 60 * 1000 // 30 minutes in milliseconds
     private var timeLeftInMillis = pomodoroDuration // Track remaining time
     private val interval = 1000L // 1-second interval
 
@@ -45,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progress_bar)
         controlButton = findViewById(R.id.control_button)
         resetButton = findViewById(R.id.reset)
+        coffeeButton = findViewById(R.id.coffee_button)
 
         // Set ProgressBar properties
         progressBar.max = (pomodoroDuration / interval).toInt()
@@ -56,7 +62,10 @@ class MainActivity : AppCompatActivity() {
         // Control button functionality
         controlButton.setOnClickListener {
             when {
-                !isRunning -> startTimer() // Initial start
+                !isRunning && !isInitialized -> {
+                    isInitialized = true // Mark timer as started at least once
+                    startTimer()
+                }
                 isPaused -> resumeTimer()  // Resume after pause
                 else -> pauseTimer()        // Pause the timer if running
             }
@@ -67,14 +76,15 @@ class MainActivity : AppCompatActivity() {
             resetTimer()
         }
         // Coffee button functionality
-        coffeeButton = findViewById(R.id.coffee_button)
         coffeeButton.setOnClickListener {
             // Store the remaining time in a separate variable
             originalTimeLeftInMillis = timeLeftInMillis
 
+            //done: Navigate to CheckpointActivity
+
             // Navigate to CheckpointActivity
-            val intent = Intent(this, CheckpointActivity::class.java)
-            startActivityForResult(intent, REQUEST_CODE_CHECKPOINT)
+            slices++ // Increment slices counter
+            navigateToCheckpoint(isPomodoro)
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -83,96 +93,168 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
-    // Handle result from CheckpointActivity
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_CHECKPOINT && resultCode == RESULT_OK) {
-            // Set the timer for a 5-minute coffee break
-            timeLeftInMillis = coffeBreakDuration
-            startCoffeeBreakTimer()
-        }
-    }
-    // Start a coffee break countdown timer
-    private fun startCoffeeBreakTimer() {
+
+    // Handle navigation to CheckpointActivity on Pomodoro completion
+    private fun startPomodoroTimer() {
         isRunning = true
-        progressBar.max = (coffeBreakDuration / 1000).toInt()
-        countDownTimer?.cancel() // Cancel any existing timer
-        countDownTimer = object : CountDownTimer(coffeBreakDuration, interval) {
-            override fun onTick(millisUntilFinished: Long) {
-                timeLeftInMillis = millisUntilFinished
-                updateTimerText(timeLeftInMillis)
-
-                // Update progress
-                val elapsedSeconds = ((coffeBreakDuration - millisUntilFinished) / 1000).toInt()
-                progressBar.progress = elapsedSeconds
-            }
-
-            override fun onFinish() {
-                isRunning = false
-                updateTimerText(0)
-                progressBar.progress = progressBar.max // Complete progress on finish
-
-                // Optional: Restore main timer after coffee break
-                timeLeftInMillis = originalTimeLeftInMillis
-                updateTimerText(timeLeftInMillis)
-            }
-        }.start()
-    }
-    private fun startTimer() {
-        isRunning = true
-        isPaused = false
+        isPomodoro = true // Set mode to Pomodoro
         controlButton.text = getString(R.string.stop) // Set button to "Stop"
-
-        // Set max to total time in seconds (adjusts the progress bar scale)
-        progressBar.max = (pomodoroDuration / 1000).toInt()
+        progressBar.max = (pomodoroDuration / interval).toInt() // Set max progress for Pomodoro
+        countDownTimer?.cancel() // Cancel any existing timer
 
         countDownTimer = object : CountDownTimer(timeLeftInMillis, interval) {
             override fun onTick(millisUntilFinished: Long) {
                 timeLeftInMillis = millisUntilFinished
                 updateTimerText(timeLeftInMillis)
 
-                // Calculate elapsed time in seconds and set it as the progress
-                val elapsedSeconds = ((pomodoroDuration - millisUntilFinished) / 1000).toInt()
-                progressBar.progress = elapsedSeconds
-                Log.d("ProgressUpdate", "Progress: $elapsedSeconds / ${progressBar.max}") // Log each progress update
-                progressBar.invalidate()
+                // Update progress bar for Pomodoro timer
+                val progress = ((pomodoroDuration - millisUntilFinished) / interval).toInt()
+                progressBar.progress = progress
             }
 
             override fun onFinish() {
                 isRunning = false
-                controlButton.text = getString(R.string.start) // Reset button to "Start"
+                timeLeftInMillis = pomodoroDuration
                 updateTimerText(0)
-                progressBar.progress = progressBar.max // Complete progress on finish
-                showRandomMessageDialog() // Optional end message
+                progressBar.progress = progressBar.max
+
+                slices++ // Increment slices counter
+                navigateToCheckpoint(isPomodoro)
             }
         }.start()
     }
 
-    private fun pauseTimer() {
-        isPaused = true
-        controlButton.text = getString(R.string.resume) // Change to "Resume"
-        countDownTimer?.cancel() // Pause timer without resetting it
+    private fun startCoffeeBreakTimer() {
+        isRunning = true
+        isPomodoro = false
+        controlButton.text = getString(R.string.stop) // Set button to "Stop"
+        progressBar.max = (coffeBreakDuration / interval).toInt() // Set max progress for Coffee Break
+        countDownTimer?.cancel()
+        coffeeButton.isEnabled = false
+
+        countDownTimer = object : CountDownTimer(timeLeftInMillis, interval) {
+            override fun onTick(millisUntilFinished: Long) {
+                timeLeftInMillis = millisUntilFinished
+                updateTimerText(timeLeftInMillis)
+
+                // Update progress bar for Coffee Break timer
+                val progress = ((coffeBreakDuration - millisUntilFinished) / interval).toInt()
+                progressBar.progress = progress
+            }
+
+            override fun onFinish() {
+                isRunning = false
+                timeLeftInMillis = coffeBreakDuration
+                updateTimerText(0)
+                progressBar.progress = progressBar.max
+                navigateToCheckpoint(isPomodoro)// Toggle back to Pomodoro for next cycle
+                coffeeButton.isEnabled = true
+
+            }
+        }.start()
+    }
+    // New function to handle the full break timer
+    private fun startFullBreakTimer() {
+        isRunning = true
+        isPomodoro = false
+        controlButton.text = getString(R.string.stop) // Set button to "Stop"
+        progressBar.max = (fullBreakDuration / interval).toInt() // Set max progress for Full Break
+        countDownTimer?.cancel()
+        coffeeButton.isEnabled = false
+
+        countDownTimer = object : CountDownTimer(fullBreakDuration, interval) {
+            override fun onTick(millisUntilFinished: Long) {
+                timeLeftInMillis = millisUntilFinished
+                updateTimerText(timeLeftInMillis)
+
+                // Update progress bar for Full Break timer
+                val progress = ((fullBreakDuration - millisUntilFinished) / interval).toInt()
+                progressBar.progress = progress
+            }
+
+            override fun onFinish() {
+                isRunning = false
+                timeLeftInMillis = fullBreakDuration
+                updateTimerText(0)
+                progressBar.progress = progressBar.max // Full break complete
+                coffeeButton.isEnabled = true
+
+                // Reset slices after full break
+                slices = 0
+            }
+        }.start()
     }
 
     private fun resumeTimer() {
         isPaused = false
-        controlButton.text = getString(R.string.stop) // Change back to "Stop" to allow pausing again
-        startTimer() // Resume with the remaining time
+        controlButton.text = getString(R.string.stop)
+
+        // Start the appropriate timer based on current state
+        if (isPomodoro) {
+            startPomodoroTimer() // Resume as Pomodoro if it was in Pomodoro mode
+        } else {
+            // Determine if the next cycle is a coffee break or full break based on slices
+            if (slices < 4) {
+                Log.d("PomodoroTimer", "Starting Full Break Timer")
+                startCoffeeBreakTimer() // Resume as Coffee Break if it was in break mode
+            } else {
+                startFullBreakTimer() // Start full break if slices reached 4
+            }
+        }
     }
+
+    // Helper function to start the appropriate timer based on isPomodoro
+    private fun startTimer() {
+        if (isPomodoro) {
+            startPomodoroTimer()
+        } else {
+            // Check if the next cycle is a coffee break or full break
+            if (slices < 4) {
+                Log.d("PomodoroTimer", "Starting Full Break Timer")
+                startCoffeeBreakTimer()
+            } else {
+                startFullBreakTimer()
+            }
+        }
+    }
+    private fun pauseTimer() {
+        isPaused = true
+        controlButton.text = getString(R.string.resume)
+        countDownTimer?.cancel() // Pause the timer without resetting it
+    }
+
+
+    // Handle result from CheckpointActivity
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_CHECKPOINT && resultCode == RESULT_OK) {
+            isPomodoro = !isPomodoro
+            timeLeftInMillis = if (isPomodoro) pomodoroDuration else coffeBreakDuration
+            progressBar.max = (timeLeftInMillis / interval).toInt()
+            startTimer() // Start the appropriate timer
+        }
+    }
+
 
     private fun resetTimer() {
         countDownTimer?.cancel()
+        isInitialized = false
         isRunning = false
         isPaused = false
+        isPomodoro = true // Reset to Pomodoro mode
+        coffeeButton.isEnabled = true
+        slices=0
         timeLeftInMillis = pomodoroDuration
-        controlButton.text = getString(R.string.start) // Reset to "Start"
-        updateTimerText(pomodoroDuration)
+        progressBar.max = (pomodoroDuration / interval).toInt()
         progressBar.progress = 0 // Reset progress bar to zero
+        updateTimerText(timeLeftInMillis)
+        controlButton.text = getString(R.string.start)
     }
 
     private fun updateTimerText(millisUntilFinished: Long) {
         val minutes = (millisUntilFinished / 1000) / 60
-        val seconds = (millisUntilFinished / 1000) % 60
+        var seconds = (millisUntilFinished / 1000) % 60
+        seconds++
         timerTextView.text = String.format("%02d:%02d", minutes, seconds)
     }
 
@@ -183,6 +265,14 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+    }
+    private fun navigateToCheckpoint(isPomodoro: Boolean) {
+
+        val intent = Intent(this, CheckpointActivity::class.java).apply {
+            putExtra("isPomodoro", isPomodoro)
+            putExtra("remainingTime", timeLeftInMillis)
+        }
+        startActivityForResult(intent, REQUEST_CODE_CHECKPOINT)
     }
 
     private fun showRandomMessageDialog() {
