@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".MainActivity">
+
+    <!-- Frame layout timer -->
+    <FrameLayout
+        android:id="@+id/timer_layout"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.308">
+        <!-- background -->
+        <ImageView
+            android:id="@+id/clock_background"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/tomato_slice"
+            android:alpha="0.3">
+        </ImageView>
+        <!-- Relative pomodoro progress timer -->
+        <!-- Red progress bar gradient ring -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:indeterminate="false"
+            android:max="10"
+            android:progress="10"
+            android:rotation="-90"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:background="@drawable/gray_progressbar_background"
+            android:progressDrawable="@drawable/red_progressbar_background">
+        </ProgressBar>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center">
+            <!-- timer -->
+            <TextView
+                android:id="@+id/timer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/quarter_tomato"
+                android:textStyle="bold"
+                android:textSize="26sp"
+                android:textColor="@color/crimson"
+                android:gravity="center"/>
+            <!-- timer text -->
+            <TextView
+                android:id="@+id/timer_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/time_left"
+                android:gravity="center"
+                android:textSize="20sp"
+                android:textColor="@color/crimson"
+                android:layout_below="@id/timer"/>
+        </RelativeLayout>
+    </FrameLayout>
+    <!-- coffee break button -->
+    <ImageButton
+        android:id="@+id/coffee_button"
+        android:layout_width="65dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
+        android:background="@color/white"
+        android:src="@drawable/coffe_break"
+        android:scaleType="fitXY"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/timer_layout">
+    </ImageButton>
+    <!-- Custom Progress Bar represented with pomodoros -->
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="0dp"
+        android:layout_marginBottom="160dp"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Dot 1 -->
+        <ImageView
+            android:id="@+id/dot1"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/gray_dot" />
+
+        <!-- Dot 2 -->
+        <ImageView
+            android:id="@+id/dot2"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@id/dot1"
+            android:src="@drawable/gray_dot" />
+
+        <!-- Dot 3 -->
+        <ImageView
+            android:id="@+id/dot3"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@id/dot2"
+            android:src="@drawable/gray_dot" />
+
+        <!-- Dot 4 -->
+        <ImageView
+            android:id="@+id/dot4"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@id/dot3"
+            android:src="@drawable/gray_dot" />
+    </RelativeLayout>
+    <!-- Reset whole progress -->
+    <Button
+        android:id="@+id/reset"
+        android:layout_width="144dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="160dp"
+        android:text="@string/reset"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:alpha="0.8"
+        android:enabled="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+    </Button>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/control_button"
+        android:layout_width="284dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="52dp"
+        android:text="@string/start"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:background="@drawable/button_bg"
+        android:enabled="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+
+        >
+
+    </androidx.appcompat.widget.AppCompatButton>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

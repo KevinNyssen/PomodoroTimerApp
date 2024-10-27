@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">practice</string>
+    <string name="quarter_tomato">25:00</string>
+    <string name="Start_buttom">Start</string>
+    <string name="time_left">time left</string>
+    <string name="reset">Reset</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="resume">Resume</string>
+    <string name="_example">Your motivational message here.</string>
+    <string name="tomato_time">The grind is not over yet. Keep going and focus again.</string>
+    <string name="coffee_time">It\'s time to relax and drink some coffee. Take a break.</string>
+
+    <string name="ok">OK</string>
+</resources>
