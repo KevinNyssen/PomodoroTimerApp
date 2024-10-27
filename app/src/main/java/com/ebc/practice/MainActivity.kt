@@ -12,6 +12,7 @@ import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
+//something new
 class MainActivity : AppCompatActivity() {
 
     private lateinit var timerTextView: TextView
