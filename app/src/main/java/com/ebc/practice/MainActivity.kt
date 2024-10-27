@@ -33,8 +33,8 @@ class MainActivity : AppCompatActivity() {
     private var isRunning = false
     private var isPaused = false
     private var countDownTimer: CountDownTimer? = null
-    private val pomodoroDuration = 1 * 12 * 1000L // 25 minutes in milliseconds
-    private val coffeBreakDuration = 1* 6 * 1000L // 5 minutes in milliseconds
+    private val pomodoroDuration = 25 * 60 * 1000L // 25 minutes in milliseconds
+    private val coffeBreakDuration = 5* 60 * 1000L // 5 minutes in milliseconds
     private var slices = 0 // Initialize the slice counter
     private val fullBreakDuration: Long = 30 * 60 * 1000 // 30 minutes in milliseconds
     private var timeLeftInMillis = pomodoroDuration // Track remaining time
