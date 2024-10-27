@@ -12,7 +12,7 @@ import androidx.appcompat.widget.AppCompatImageButton
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-//something new
+//Version control beta 1.0.0
 class MainActivity : AppCompatActivity() {
 
     private lateinit var timerTextView: TextView
